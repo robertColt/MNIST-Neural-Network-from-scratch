@@ -4,6 +4,15 @@ import os.path
 import pickle
 
 
+def get_mnist_csv(filePath):
+    #shape = 60000,785
+    mnist_data = np.loadtxt(filePath, delimiter=",")
+
+    images = np.asfarray(mnist_data[:, 1:])
+    labels = np.asfarray(mnist_data[:, :1])
+    return (images,labels)
+
+
 def get_mnist_data():
     """
     :return: a tuple of X and y,
@@ -11,7 +20,7 @@ def get_mnist_data():
     and y are the labels of the images
     """
 
-    fileNameData = "data/mnist.data"
+    fileNameData = "data/mnist_train.csv"
     if os.path.isfile(fileNameData):
         print("Loading data from local folder...")
         with open(fileNameData, "rb") as mnistData:

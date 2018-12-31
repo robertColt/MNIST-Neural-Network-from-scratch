@@ -15,6 +15,7 @@ class NNOneHidden():
         self.X = None  # training data
         self.y = None  # labels
         self.train_history = []  # save epoch:cost pair
+        self.test_history = []
 
 
     def classify(self, X):
@@ -33,9 +34,10 @@ class NNOneHidden():
         # a2 = softmax(z2)
         # # print("a2", a2.shape)
         # return a2
+        x_prev = self.X
         self.X = X
         self.feed_forward()
-
+        self.X = x_prev
         return self.A[1]
 
 
@@ -50,7 +52,7 @@ class NNOneHidden():
         self.b = b
 
 
-    def train(self, X, y, epochs, classes, learning_rate=1, hidden_units=64):
+    def train(self, X, y, X_test, y_test, epochs, classes, learning_rate=1, hidden_units=64):
         """
         trains the network with the specified parameters
         :param X: training data shape = (n features, m examples)
@@ -66,6 +68,7 @@ class NNOneHidden():
         self.y = y
         input_size = X.shape[0]
         train_examples = X.shape[1]
+        test_examples = X_test.shape[1]
 
         self.init_weights(hidden_units=hidden_units, input_size=input_size, classes=classes)
 
@@ -77,16 +80,19 @@ class NNOneHidden():
             self.update(learning_rate=learning_rate, beta=0.9)
 
             self.X = X
+            self.feed_forward()
 
-            cost = loss_cross_entropy(y, self.A[1], train_examples)
-            self.train_history.append(cost)
-            print("epoch {}: cost {}".format(epoch, cost))
+            train_cost = loss_cross_entropy(y, self.A[1], train_examples)
+            test_cost = loss_cross_entropy(y_test, self.classify(X_test), test_examples)
+            self.train_history.append(train_cost)
+            self.test_history.append(test_cost)
+            print("epoch {}: train_cost {}, val cost {}".format(epoch, train_cost, test_cost))
 
-        print("final cost : ", cost)
-        return self.W, self.b, self.train_history
+        print("final cost : ", train_cost, test_cost)
+        return self.W, self.b, self.train_history, self.test_history
 
 
-    def mini_batch_train(self, X, y, epochs, classes, batch_size, learning_rate=1, hidden_units=64):
+    def mini_batch_train(self, X, y, X_test, y_test, epochs, classes, batch_size, learning_rate=1, hidden_units=64):
         """
         trains the network with the specified parameters
         :param X: training data shape = (n features, m examples)
@@ -102,6 +108,7 @@ class NNOneHidden():
         self.y = y
         input_size = X.shape[0]
         train_examples = X.shape[1]
+        test_examples = X_test.shape[1]
         batches = -(-train_examples // batch_size)
 
         self.init_weights(hidden_units=hidden_units, input_size=input_size, classes=classes)
@@ -130,12 +137,14 @@ class NNOneHidden():
             self.X = X
             self.feed_forward()
 
-            cost = loss_cross_entropy(y, self.A[1], train_examples)
-            self.train_history.append(cost)
-            print("epoch {}: cost {}".format(epoch, cost))
+            train_cost = loss_cross_entropy(y, self.A[1], train_examples)
+            test_cost = loss_cross_entropy(y_test, self.classify(X_test), test_examples)
+            self.train_history.append(train_cost)
+            self.test_history.append(test_cost)
+            print("epoch {}: train_cost {}, val cost {}".format(epoch, train_cost, test_cost))
 
-        print("final cost : ", cost)
-        return self.W, self.b, self.train_history
+        print("final cost : ", train_cost, test_cost)
+        return self.W, self.b, self.train_history, self.test_history
 
 
     def init_weights(self, hidden_units, input_size, classes):

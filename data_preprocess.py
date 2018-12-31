@@ -25,8 +25,10 @@ X = X/255
 # plt.axis("off")
 # plt.show()
 
-X = np.where(X >= 0.4, 1.0, 0.0)
+#X = np.where(X >= 0.4, 1.0, 0.0)
 
+utils.saveToFile("data/mnist.dat", (X, y))
+print("Saved")
 
 n_digits = 10
 n_samples = y.shape[0]

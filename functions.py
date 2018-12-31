@@ -8,6 +8,14 @@ def sigmoid(z):
     """
     return 1/(1 + np.exp(-z))
 
+def dsigmoid(z):
+    """
+    applies the sigmoid function on the given z
+    :param z: a numpy array
+    :return:
+    """
+    return np.multiply(sigmoid(z),((np.ones(z.shape)-sigmoid(z))))
+
 
 def softmax(z):
     """
@@ -16,6 +24,9 @@ def softmax(z):
     :return:
     """
     return np.exp(z) / np.sum(np.exp(z), axis=0)
+
+def dsoftmax(z):
+    pass
 
 
 def loss_cross_entropy(Y, y_actual, examples):
