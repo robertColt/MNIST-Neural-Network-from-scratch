@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Neural Network MNIST classification</title>
+    <script type="text/javascript" src="/eel.js"></script>
+    <script type="text/javascript">
+        eel.expose(on_prediction_ready);
+        function on_prediction_ready(digit){
+            prediction_text = document.querySelector("#prediction-message");
+            prediction_text.innerHTML = "You have drawn a " + digit;
+        }
+    </script>
+    <script src="http://hongru.github.io/proj/canvas2image/canvas2image.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <style type="text/css">
+        body{
+            margin:0;
+            padding:0;
+            background:
+                url("bg-img-header.jpg")
+                repeat;
+        }
+        h1, h2{
+            font-family: "Verdana";
+            margin:0;
+        }
+
+        hr.colored {
+          border: 0;   /* in order to override TWBS stylesheet */
+          margin:0;
+          padding:0;
+          height: 10px;
+
+          background: -moz-linear-gradient(left, rgba(196,222,138,1) 0%, rgba(196,222,138,1) 12.5%, rgba(245,253,212,1) 12.5%, rgba(245,253,212,1) 25%, rgba(255,208,132,1) 25%, rgba(255,208,132,1) 37.5%, rgba(242,122,107,1) 37.5%, rgba(242,122,107,1) 50%, rgba(223,157,185,1) 50%, rgba(223,157,185,1) 62.5%, rgba(192,156,221,1) 62.5%, rgba(192,156,221,1) 75%, rgba(95,156,217,1) 75%, rgba(95,156,217,1) 87.5%, rgba(94,190,227,1) 87.5%, rgba(94,190,227,1) 87.5%, rgba(94,190,227,1) 100%);  /* FF3.6+ */
+          background: -webkit-linear-gradient(left, rgba(196,222,138,1) 0%, rgba(196,222,138,1) 12.5%, rgba(245,253,212,1) 12.5%, rgba(245,253,212,1) 25%, rgba(255,208,132,1) 25%, rgba(255,208,132,1) 37.5%, rgba(242,122,107,1) 37.5%, rgba(242,122,107,1) 50%, rgba(223,157,185,1) 50%, rgba(223,157,185,1) 62.5%, rgba(192,156,221,1) 62.5%, rgba(192,156,221,1) 75%, rgba(95,156,217,1) 75%, rgba(95,156,217,1) 87.5%, rgba(94,190,227,1) 87.5%, rgba(94,190,227,1) 87.5%, rgba(94,190,227,1) 100%); /* Chrome10+,Safari5.1+ */
+          background: -o-linear-gradient(left, rgba(196,222,138,1) 0%, rgba(196,222,138,1) 12.5%, rgba(245,253,212,1) 12.5%, rgba(245,253,212,1) 25%, rgba(255,208,132,1) 25%, rgba(255,208,132,1) 37.5%, rgba(242,122,107,1) 37.5%, rgba(242,122,107,1) 50%, rgba(223,157,185,1) 50%, rgba(223,157,185,1) 62.5%, rgba(192,156,221,1) 62.5%, rgba(192,156,221,1) 75%, rgba(95,156,217,1) 75%, rgba(95,156,217,1) 87.5%, rgba(94,190,227,1) 87.5%, rgba(94,190,227,1) 87.5%, rgba(94,190,227,1) 100%); /* Opera 11.10+ */
+          background: -ms-linear-gradient(left, rgba(196,222,138,1) 0%, rgba(196,222,138,1) 12.5%, rgba(245,253,212,1) 12.5%, rgba(245,253,212,1) 25%, rgba(255,208,132,1) 25%, rgba(255,208,132,1) 37.5%, rgba(242,122,107,1) 37.5%, rgba(242,122,107,1) 50%, rgba(223,157,185,1) 50%, rgba(223,157,185,1) 62.5%, rgba(192,156,221,1) 62.5%, rgba(192,156,221,1) 75%, rgba(95,156,217,1) 75%, rgba(95,156,217,1) 87.5%, rgba(94,190,227,1) 87.5%, rgba(94,190,227,1) 87.5%, rgba(94,190,227,1) 100%); /* IE10+ */
+          background: linear-gradient(to right, rgba(196,222,138,1) 0%, rgba(196,222,138,1) 12.5%, rgba(245,253,212,1) 12.5%, rgba(245,253,212,1) 25%, rgba(255,208,132,1) 25%, rgba(255,208,132,1) 37.5%, rgba(242,122,107,1) 37.5%, rgba(242,122,107,1) 50%, rgba(223,157,185,1) 50%, rgba(223,157,185,1) 62.5%, rgba(192,156,221,1) 62.5%, rgba(192,156,221,1) 75%, rgba(95,156,217,1) 75%, rgba(95,156,217,1) 87.5%, rgba(94,190,227,1) 87.5%, rgba(94,190,227,1) 87.5%, rgba(94,190,227,1) 100%); /* W3C */
+        }
+
+        #canvas{
+            margin: 20px 0px 0px 0px;
+            padding:0;
+        }
+
+        #title{
+            color:white;
+            padding: 30px;
+        }
+
+        .personal-info{
+            color:white;
+            padding-top:30px;
+            font-size:21px;
+        }
+
+        #h2-instruction{
+            padding:20px 0px 10px 0px;
+            color: white;
+            background-color: #494f51;
+            font-size:21px;
+        }
+
+        #prediction-message{
+            color:#35b258;
+            weight:4;
+        }
+
+        button{
+            padding: 15px 25px;
+            border: none;
+            text-align:center;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #btn-classify{
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #btn-erase{
+            background-color: #008CBA;
+            color: white;
+        }
+
+        #btn-classify:hover{
+            background-color:#458e48;
+            //box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+        }
+
+        #btn-erase:hover{
+            background-color: #00759b;
+            //box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+        }
+
+        button:focus{
+            outline: 0px;
+        }
+
+        #btn-container{
+            padding: 20px 0px;
+            padding-bottom:30px;
+            background-color: #494f51;
+        }
+    </style>
+
+</head>
+<body>
+<div>
+    <div id="header" align="center">
+        <h1 id="title" style="padding-top:30px">Handwritten digit recognition using NNs</h1>
+    </div>
+
+    <div style="background-color:white" align="center">
+        <hr class="colored">
+        <canvas id="canvas"></canvas>
+        <div>
+            <h2 id="prediction-message" style="margin-bottom:20px" align="center"></h2>
+        </div>
+        <hr class="colored">
+        <div>
+            <h2 id="h2-instruction">Draw a digit from 0-9 in the black box</h2>
+            <div align="center">
+                <div id="btn-container">
+                    <button id="btn-classify" onclick="classifyImage()">Classify</button>
+                    <button id="btn-erase" onclick="clearCanvas()">Erase</button>
+                </div>
+            </div>
+        </div>
+        <hr class="colored" style="height:5px">
+    </div>
+    <div align="center">
+        <h2 class="personal-info">Author</h2>
+        <h2 class="personal-info" style="padding-top:15px">Colt Robert - George</h2>
+    </div>
+
+
+</div>
+
+
+<script type="text/javascript">
+    const canvas = document.querySelector('#canvas');
+    const displayCanvas = document.querySelector('#displayCanvas');
+    canvas.height = 150;
+    canvas.width = 150;
+    canvas.style.backgroundColor = "black";
+    const context = canvas.getContext('2d');
+
+    context.lineJoin = 'round';
+    context.lineCap = 'round';
+    context.lineWidth = 10;
+    context.strokeStyle = "white";
+
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+
+    function draw(event) {
+        if(!isDrawing) return;
+
+        //console.log(e);
+        context.beginPath();
+        context.moveTo(lastX, lastY);
+        context.lineTo(event.offsetX, event.offsetY);
+        context.stroke();
+        [lastX, lastY] = [event.offsetX, event.offsetY];
+    }
+
+
+    canvas.addEventListener('mousedown', (e) => {
+        isDrawing = true;
+        [lastX, lastY] = [e.offsetX, e.offsetY];
+    });
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', () => isDrawing = false);
+    canvas.addEventListener('mouseout', () => isDrawing = false);
+
+
+    function clearCanvas(){
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        document.querySelector("#prediction-message").innerHTML = "";
+    }
+
+    function classifyImage(){
+        //var image = new Image()
+        //var imgUrl = canvas.toDataURL();
+        //image.src = imgUrl
+
+        let digit = tf.fromPixels(canvas)
+        .resizeNearestNeighbor([28,28])
+        .mean(2)
+        .toFloat()
+        .reshape([1,784]);
+        digit.div(255.0).data()
+        .then(X => {
+             console.log(X);
+             eel.classify_image(X.join(" "));
+         });
+    }
+
+
+
+
+
+
+</script>
+
+</body>
+</html>
